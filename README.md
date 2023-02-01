@@ -1,5 +1,5 @@
 <div align="left">
-    <h1>Search4FacesAPI <img src="https://anypay.io/template/img/main/logo-start.svg" width=30 height=30></h1>
+    <h1>AnyPayAPI <img src="https://anypay.io/template/img/main/logo-start.svg" width=30 height=30></h1>
     <p align="left" >
         <a href="https://pypi.org/project/anypay/">
             <img src="https://img.shields.io/pypi/v/anypay?style=flat-square" alt="PyPI">
