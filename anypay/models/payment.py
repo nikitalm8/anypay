@@ -6,8 +6,8 @@ from pydantic.fields import Field
 
 class Payment(BaseModel):
 
-    id: int = Field(..., alias='transaction_id')
-    pay_id: int
+    id: int = Field(..., alias='pay_id')
+    transaction_id: int
     status: str
     method: str
     amount: int | float

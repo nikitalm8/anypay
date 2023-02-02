@@ -31,7 +31,8 @@ class AnyPayAPI:
         self, 
         api_id: str, 
         api_key: str, 
-        project_id: int | None, 
+        project_id: int | None=None, 
+        project_secret: str | None=None,
         use_md5: bool=False,
         no_check: bool=False,
     ) -> None:
@@ -41,6 +42,7 @@ class AnyPayAPI:
         :param api_id: API ID, can be found in your profile settings.
         :param api_key: API Key, can be found in your profile settings.
         :param project_id: Project ID, can be found in your project settings.
+        :param project_secret: Project Secret, can be found in your project settings. Add it if you need to use SCI.
         :param use_md5: Use MD5 signature instead of SHA256 (change to MD5 in settings).
         :param no_check: Disable API ID and API Key check.
 
@@ -51,10 +53,11 @@ class AnyPayAPI:
         self.api_key = api_key
 
         self.project_id = project_id
+        self.project_secret = project_secret
 
         self.use_md5 = use_md5
         self.session = httpx.AsyncClient(
-            headers=self.HEADERS,
+            #headers=self.HEADERS,
             timeout=60,
         )
 
@@ -352,9 +355,108 @@ class AnyPayAPI:
         ]
 
 
-
     async def get_service_ip(self) -> list[str]:
 
         response = await self._make_request_async('ip-notification')
 
         return response['result']
+
+
+    async def create_bill(
+        self, 
+        pay_id: int,
+        amount: int | float,
+        project_id: int | None=None,
+        project_secret: str | None=None,
+        currency: str='RUB',
+        description: str='Payment',
+        method: str | None=None,
+        email: str | None=None,
+        phone: str | None=None,
+        success_url: str | None=None,
+        fail_url: str | None=None,
+        lang: str | None=None,
+        use_md5: bool=True,
+        **kwargs,
+    ) -> Bill:
+        """
+        Create a bill via eased up SCI methods (only pay_id, amount, project_id and project_secret are required).
+        Docs: https://anypay.io/doc/sci/
+
+        :param pay_id: Payment ID.
+        :param amount: Payment amount.
+        :param project_id: Project ID, can be added in __init__.
+        :param project_secret: Project secret key, can be added in __init__.
+        :param currency: Payment currency.
+        :param description: Payment description.
+        :param method: Payment method.
+        :param email: User email.
+        :param phone: User phone.
+        :param success_url: Success URL.
+        :param fail_url: Fail URL.
+        :param lang: Bill page language.
+        :param use_md5: Use MD5 (defaults to True).
+
+        :return: Bill object.
+        :raises: AnyPayAPIError
+        """
+    
+        if use_md5:
+
+            singature_string = '%s:%s:%s:%s:%s' % (
+                currency,
+                amount,
+                project_secret or self.project_secret,
+                project_id or self.project_id,
+                pay_id,
+            )
+            signature = hashlib.md5(
+                singature_string.encode('utf-8')
+            ).hexdigest()
+
+        else:
+
+            signature_string = '%s:%s:%s:%s:%s:%s:%s:%s' % (
+                project_id or self.project_id,
+                pay_id,
+                amount,
+                currency,
+                description,
+                success_url,
+                fail_url,
+                project_secret or self.project_secret,
+            )
+            signature = hashlib.sha256(
+                signature_string.encode('utf-8')
+            ).hexdigest()
+
+        params = {
+            'merchant_id': project_id or self.project_id,
+            'pay_id': pay_id,
+            'amount': amount,
+            'currency': currency,
+            'desc': description,
+            'method': method,
+            'email': email,
+            'phone': phone,
+            'success_url': success_url,
+            'fail_url': fail_url,
+            'lang': lang,
+            'sign': signature,
+            **kwargs,
+        }
+
+        response = await self.session.get(
+            'https://anypay.io/merchant',
+            params={
+                key: value
+                for key, value
+                in params.items()
+                if value is not None
+            }
+        )
+
+        return Bill(
+            pay_id=pay_id,
+            payment_url=str(response.url),
+        )
