@@ -151,6 +151,21 @@ class AnyPayAPI:
 
         return response['result']['balance']
 
+    
+    @property
+    def balance(self) -> float | int:
+        """
+        Get balance.
+        Docs: https://anypay.io/doc/api/balance
+        
+        :return: Balance.
+        :raises: AnyPayAPIError
+        """
+
+        response = self._make_request('balance')
+
+        return response['result']['balance']
+
 
     async def get_convertion_rates(self) -> Rates:
         """
@@ -162,6 +177,22 @@ class AnyPayAPI:
         """
 
         response = await self._make_request_async('rates')
+
+        return Rates(**response['result'])
+
+
+    @property
+    def convertion_rates(self) -> Rates:
+        """
+        Get convertion rates.
+        Docs: https://anypay.io/doc/api/rates
+        
+        :return: Rates object.
+        :raises: AnyPayAPIError
+        """
+
+
+        response = self._make_request('rates')
 
         return Rates(**response['result'])
 
@@ -184,6 +215,26 @@ class AnyPayAPI:
         )
 
         return response['result']
+
+
+    @property
+    def commissions(self) -> dict:
+        """
+        Get commissions.
+        Docs: https://anypay.io/doc/api/commissions
+        
+        :return: Commissions object.
+        :raises: AnyPayAPIError
+        """
+
+        response = self._make_request(
+            'commissions',
+            '%(project_id)s',
+            project_id=self.project_id,
+        )
+
+        return response['result']
+
 
 
     async def create_payment(
