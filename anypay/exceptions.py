@@ -11,8 +11,9 @@ class AnyPayAPIError(Exception):
     def __init__(self, exception: dict) -> None:
         """
         AnyPay API Exception.
+        Docs: https://anypay.io/doc/api/errors
         
-        :param exception: Exception data.
+        :param exception: Exception data (code and message).
         
         :raises: AnyPayAPIError
         """
@@ -26,6 +27,10 @@ class AnyPayAPIError(Exception):
 
 
 def error_check(func: Callable) -> Callable:
+    """
+    Decorator for checking errors in response of sync methods.
+    If there is an `error` key in the response, raises an AnyPayAPIError.
+    """
 
     @wraps(func)
     def wrapper(self, *args, **kwargs) -> dict:
@@ -42,6 +47,10 @@ def error_check(func: Callable) -> Callable:
 
 
 def error_check_async(func: Awaitable) -> Awaitable:
+    """
+    Decorator for checking errors in response of async methods.
+    If there is an `error` key in the response, raises an AnyPayAPIError.
+    """
 
     @wraps(func)
     async def wrapper(self, *args, **kwargs) -> dict:
