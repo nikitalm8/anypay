@@ -10,7 +10,7 @@
     </p>
 </div>
 
-A simple, yet powerful library for AnyPay [API](https://anypay.io/doc/api/)
+A simple, yet powerful library for AnyPay [API](https://anypay.io/doc/api)
 
 
 ## Usage
@@ -19,7 +19,7 @@ With ``AnyPayAPI`` you can easily create and retrieve payment and payout info, g
 
 ## Documentation
 
-Official docs can be found on the [API's webpage](https://anypay.io/doc/api/)
+Official docs can be found on the [API's webpage](https://anypay.io/doc/api)
 
 ## Installation
 
