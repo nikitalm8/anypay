@@ -85,6 +85,9 @@ async def main():
     )
     print(bill.id, bill.url)
 
+    #get balance via property (sync)
+    print(api.balance)
+
 
 asyncio.run(main())
 ```
