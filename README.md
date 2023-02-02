@@ -77,6 +77,14 @@ async def main():
     )
     print(bill.id, bill.url)
 
+    bill = await api.create_bill( # easier way to create payment via SCI
+        pay_id=1234,
+        amount=100,
+        project_id=1,
+        project_secret='abcd',
+    )
+    print(bill.id, bill.url)
+
 
 asyncio.run(main())
 ```
