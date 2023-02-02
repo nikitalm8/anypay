@@ -5,6 +5,11 @@ from pydantic.fields import Field
 
 
 class Payout(BaseModel):
+    """
+    Class for Payout model
+    `date` and `complete_date` are dates in format: 'DD.MM.YYYY HH:MM:SS' or blank strings
+    `exchange_rate` is float or None if payout was made in native currency
+    """
 
     id: int = Field(..., alias='payout_id')
     transaction_id: int

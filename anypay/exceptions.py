@@ -5,6 +5,7 @@ from typing import Callable, Awaitable
 class AnyPayAPIError(Exception):
     """
     Base AnyPay Exception.
+    Exception codes and their meanings can be found here: https://anypay.io/doc/api/errors
     """
     
     def __init__(self, exception: dict) -> None:

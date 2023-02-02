@@ -8,7 +8,6 @@ from .models import (
     Rates,
 )
 from .exceptions import (
-    AnyPayAPIError, 
     error_check, 
     error_check_async,
 )
@@ -17,7 +16,7 @@ from .exceptions import (
 class AnyPayAPI:
     """
     AnyPay API wrapper.
-    Docs: https://anypay.io/doc/api/
+    Docs: https://anypay.io/doc/api
     """
     
     API_URL = 'https://anypay.io/api/%s/%s'
@@ -57,18 +56,26 @@ class AnyPayAPI:
 
         self.use_md5 = use_md5
         self.session = httpx.AsyncClient(
-            #headers=self.HEADERS,
+            headers=self.HEADERS,
             timeout=60,
         )
 
         if not no_check:
 
-            self._make_request('balance')
+            # Check API ID and API Key by making request to `ip-notification` endpoint
+            self._make_request('ip-notification')
 
 
     def _form_signature(self, method: str, template: str, params: dict, use_md5: bool=False) -> str:
         """
         Form signature for AnyPay API.
+
+        :param method: API method (endpoint).
+        :param template: Template for signature.
+        :param params: Request params.
+        :param use_md5: Use MD5 signature instead of SHA256 (change to MD5 in project settings).
+
+        :return: Encoded signature string.
         """
 
         encryption_method = hashlib.sha256 if not use_md5 else hashlib.md5
@@ -88,6 +95,13 @@ class AnyPayAPI:
     def _make_request(self, endpoint: str, sign_template: str='', **params) -> dict:
         """
         Make request to AnyPay API (sync).
+
+        :param endpoint: API endpoint.
+        :param sign_template: Template for signature.
+        :param params: Request params.
+
+        :return: Response data.
+        :raises: AnyPayAPIError.
         """
 
         response = httpx.get(
@@ -116,6 +130,13 @@ class AnyPayAPI:
     async def _make_request_async(self, endpoint: str, sign_template: str='', **params) -> dict:
         """
         Make request to AnyPay API (async).
+
+        :param endpoint: API endpoint.
+        :param sign_template: Template for signature.
+        :param params: Request params.
+
+        :return: Response data.
+        :raises: AnyPayAPIError.
         """
 
         response = await self.session.get(
@@ -184,7 +205,7 @@ class AnyPayAPI:
     @property
     def convertion_rates(self) -> Rates:
         """
-        Get convertion rates.
+        Get convertion rates from property. Synchronous.
         Docs: https://anypay.io/doc/api/rates
         
         :return: Rates object.
@@ -220,7 +241,7 @@ class AnyPayAPI:
     @property
     def commissions(self) -> dict:
         """
-        Get commissions.
+        Get commissions from property. Synchronous.
         Docs: https://anypay.io/doc/api/commissions
         
         :return: Commissions object.
@@ -234,7 +255,6 @@ class AnyPayAPI:
         )
 
         return response['result']
-
 
 
     async def create_payment(
@@ -407,8 +427,30 @@ class AnyPayAPI:
 
 
     async def get_service_ip(self) -> list[str]:
+        """
+        Get service IPs.
+        Docs: https://anypay.io/doc/api/ip
+
+        :return: List of service IPs.
+        :raises: AnyPayAPIError
+        """
 
         response = await self._make_request_async('ip-notification')
+
+        return response['result']
+
+
+    @property
+    def service_ip(self) -> list[str]:
+        """
+        Get service IPs via property. Synchronous.
+        Docs: https://anypay.io/doc/api/ip
+
+        :return: List of service IPs.
+        :raises: AnyPayAPIError
+        """
+
+        response = self._make_request('ip-notification')
 
         return response['result']
 
@@ -432,6 +474,8 @@ class AnyPayAPI:
     ) -> Bill:
         """
         Create a bill via eased up SCI methods (only pay_id, amount, project_id and project_secret are required).
+        Note that this method does not raise an exception if the credentials are incorrect, the exception is show to user on the bill's page.
+        
         Docs: https://anypay.io/doc/sci/
 
         :param pay_id: Payment ID.
@@ -449,7 +493,6 @@ class AnyPayAPI:
         :param use_md5: Use MD5 (defaults to True).
 
         :return: Bill object.
-        :raises: AnyPayAPIError
         """
     
         if use_md5:
