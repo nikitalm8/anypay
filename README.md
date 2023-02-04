@@ -29,7 +29,7 @@ pip install anypay
 
 ## Requirements
 
- - ``Python 3.9+``
+ - ``Python 3.7+``
  - ``httpx``
  - ``pydantic``
 
