@@ -12,6 +12,8 @@ from .exceptions import (
     error_check_async,
 )
 
+from typing import Union
+
 
 class AnyPayAPI:
     """
@@ -30,8 +32,8 @@ class AnyPayAPI:
         self, 
         api_id: str, 
         api_key: str, 
-        project_id: int | None=None, 
-        project_secret: str | None=None,
+        project_id: Union[int, None]=None, 
+        project_secret: Union[str, None]=None,
         use_md5: bool=False,
         no_check: bool=False,
     ) -> None:
@@ -159,7 +161,7 @@ class AnyPayAPI:
         return response.json()
 
 
-    async def get_balance(self) -> float | int:
+    async def get_balance(self) -> Union[float, int]:
         """
         Get balance.
         Docs: https://anypay.io/doc/api/balance
@@ -174,7 +176,7 @@ class AnyPayAPI:
 
     
     @property
-    def balance(self) -> float | int:
+    def balance(self) -> Union[float, int]:
         """
         Get balance.
         Docs: https://anypay.io/doc/api/balance
@@ -218,7 +220,7 @@ class AnyPayAPI:
         return Rates(**response['result'])
 
 
-    async def get_commissions(self, project_id: int | None=None) -> dict:
+    async def get_commissions(self, project_id: Union[int, None]=None) -> dict:
         """
         Get commissions.
         Docs: https://anypay.io/doc/api/commissions
@@ -263,7 +265,7 @@ class AnyPayAPI:
         amount: float,
         email: str,
         method: str,
-        project_id: int | None = None,
+        project_id: Union[int, None] = None,
         currency: str='RUB',
         desc: str='',
         method_currency: str = None,
@@ -319,9 +321,9 @@ class AnyPayAPI:
 
     async def get_payments(
         self,
-        project_id: int | None=None,
-        transaction_id: int | None=None,
-        pay_id: int | None=None,
+        project_id: Union[int, None]=None,
+        transaction_id: Union[int, None]=None,
+        pay_id: Union[int, None]=None,
         offset: int=0,
     ) -> list[Payment]:
         """
@@ -359,9 +361,9 @@ class AnyPayAPI:
         payout_type: str,
         amount: float,
         wallet: str,
-        wallet_currency: str | None=None,
-        commission_type: str | None=None,
-        status_url: str | None=None,
+        wallet_currency: Union[str, None]=None,
+        commission_type: Union[str, None]=None,
+        status_url: Union[str, None]=None,
     ) -> Payout:
         """
         Create a payout.
@@ -396,8 +398,8 @@ class AnyPayAPI:
 
     async def get_payouts(
         self,
-        transaction_id: int | None=None,
-        payout_id: int | None=None,
+        transaction_id: Union[int, None]=None,
+        payout_id: Union[int, None]=None,
         offset: int=0,
     ) -> list[Payout]:
         """
@@ -458,17 +460,17 @@ class AnyPayAPI:
     async def create_bill(
         self, 
         pay_id: int,
-        amount: int | float,
-        project_id: int | None=None,
-        project_secret: str | None=None,
+        amount: Union[int, float],
+        project_id: Union[int, None]=None,
+        project_secret: Union[str, None]=None,
         currency: str='RUB',
         description: str='Payment',
-        method: str | None=None,
-        email: str | None=None,
-        phone: str | None=None,
-        success_url: str | None=None,
-        fail_url: str | None=None,
-        lang: str | None=None,
+        method: Union[str, None]=None,
+        email: Union[str, None]=None,
+        phone: Union[str, None]=None,
+        success_url: Union[str, None]=None,
+        fail_url: Union[str, None]=None,
+        lang: Union[str, None]=None,
         use_md5: bool=True,
         **kwargs,
     ) -> Bill:

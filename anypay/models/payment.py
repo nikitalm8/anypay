@@ -1,4 +1,4 @@
-from datetime import datetime
+from typing import Union
 
 from pydantic import BaseModel
 from pydantic.fields import Field
@@ -14,9 +14,9 @@ class Payment(BaseModel):
     transaction_id: int
     status: str
     method: str
-    amount: int | float
+    amount: Union[int, float]
     currency: str
-    profit: int | float
+    profit: Union[int, float]
     email: str
     description: str = Field(..., alias='desc')
     date: str
