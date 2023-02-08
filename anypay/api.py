@@ -7,10 +7,7 @@ from .models import (
     Payout, 
     Rates,
 )
-from .exceptions import (
-    error_check, 
-    error_check_async,
-)
+from .exceptions import AnyPayAPIError
 
 from typing import Union
 
@@ -93,7 +90,22 @@ class AnyPayAPI:
         return signature.hexdigest()
 
 
-    @error_check
+    @staticmethod
+    def _check_response(response: dict) -> None:
+        """
+        Method for checking for errors in responses.
+        If there is an `error` key in the response, raises an AnyPayAPIError.
+
+        :param response: Response data.
+
+        :raises: AnyPayAPIError.
+        """
+
+        if 'error' in response:
+
+            raise AnyPayAPIError(response['error'])
+
+
     def _make_request(self, endpoint: str, sign_template: str='', **params) -> dict:
         """
         Make request to AnyPay API (sync).
@@ -124,11 +136,13 @@ class AnyPayAPI:
             headers=self.HEADERS,
             timeout=60,
         )
+        response = response.json()
+
+        self._check_response(response)
         
-        return response.json()
+        return response['result']
 
 
-    @error_check_async
     async def _make_request_async(self, endpoint: str, sign_template: str='', **params) -> dict:
         """
         Make request to AnyPay API (async).
@@ -158,7 +172,11 @@ class AnyPayAPI:
             },
         )
 
-        return response.json()
+        response = response.json()
+
+        self._check_response(response)
+        
+        return response['result']
 
 
     async def get_balance(self) -> Union[float, int]:
@@ -170,9 +188,9 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = await self._make_request_async('balance')
+        result = await self._make_request_async('balance')
 
-        return response['result']['balance']
+        return result['balance']
 
     
     @property
@@ -185,9 +203,9 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = self._make_request('balance')
+        result = self._make_request('balance')
 
-        return response['result']['balance']
+        return result['balance']
 
 
     async def get_convertion_rates(self) -> Rates:
@@ -199,9 +217,9 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = await self._make_request_async('rates')
+        result = await self._make_request_async('rates')
 
-        return Rates(**response['result'])
+        return Rates(**result)
 
 
     @property
@@ -215,9 +233,9 @@ class AnyPayAPI:
         """
 
 
-        response = self._make_request('rates')
+        result = self._make_request('rates')
 
-        return Rates(**response['result'])
+        return Rates(**result)
 
 
     async def get_commissions(self, project_id: Union[int, None]=None) -> dict:
@@ -231,13 +249,13 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = await self._make_request_async(
+        result = await self._make_request_async(
             'commissions',
             '%(project_id)s',
             project_id=project_id or self.project_id,
         )
 
-        return response['result']
+        return result
 
 
     @property
@@ -250,13 +268,13 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = self._make_request(
+        result = self._make_request(
             'commissions',
             '%(project_id)s',
             project_id=self.project_id,
         )
 
-        return response['result']
+        return result
 
 
     async def create_payment(
@@ -297,7 +315,7 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = await self._make_request_async(
+        result = await self._make_request_async(
             self.API_URL,
             'create-payment',
             '%(project_id)s%(amount)s%(currency)s%(desc)s%(method)s',
@@ -316,7 +334,7 @@ class AnyPayAPI:
             lang=lang,
         )
 
-        return Bill(**response['result'])
+        return Bill(**result)
 
 
     async def get_payments(
@@ -339,7 +357,7 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = await self._make_request_async(
+        result = await self._make_request_async(
             'payments',
             '%(project_id)s',
             project_id=project_id or self.project_id,
@@ -351,7 +369,7 @@ class AnyPayAPI:
         return [
             Payment(**payment)
             for payment
-            in response['result']['payments'].values()
+            in result['payments'].values()
         ]
 
 
@@ -381,7 +399,7 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = await self._make_request_async(
+        result = await self._make_request_async(
             'create-payout',
             '%(payout_id)s%(payout_type)s%(amount)s%(wallet)s',
             payout_id=payout_id,
@@ -393,7 +411,7 @@ class AnyPayAPI:
             status_url=status_url,
         )
 
-        return Payout(**response['result'])
+        return Payout(**result)
 
 
     async def get_payouts(
@@ -414,7 +432,7 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = await self._make_request_async(
+        result = await self._make_request_async(
             'payouts',
             transaction_id=transaction_id,
             payout_id=payout_id,
@@ -424,7 +442,7 @@ class AnyPayAPI:
         return [
             Payout(**payout)
             for payout 
-            in response['result']['payouts'].values()
+            in result['payouts'].values()
         ]
 
 
@@ -437,9 +455,9 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = await self._make_request_async('ip-notification')
+        result = await self._make_request_async('ip-notification')
 
-        return response['result']
+        return result
 
 
     @property
@@ -452,9 +470,9 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        response = self._make_request('ip-notification')
+        result = self._make_request('ip-notification')
 
-        return response['result']
+        return result
 
 
     async def create_bill(
