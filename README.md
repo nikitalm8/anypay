@@ -49,7 +49,7 @@ from anypay import AnyPayAPI, AnyPayAPIError
 
 
 api = AnyPayAPI(
-    'api_id', 'api_key', no_check=True # you can disable credentials check
+    'api_id', 'api_key', check=False,  # you can disable credentials check
 ) 
 
 
