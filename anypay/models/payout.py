@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from pydantic import BaseModel
 from pydantic.fields import Field
@@ -18,7 +18,7 @@ class Payout(BaseModel):
     amount: Union[int, float]
     commission: Union[int, float]
     commission_type: str
-    exchange_rate: Union[int, float, None] = Field(None, alias='rate')
+    exchange_rate: Optional[Union[int, float]] = Field(None, alias='rate')
     wallet: int
     date: str
     complete_date: str

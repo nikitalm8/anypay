@@ -9,7 +9,7 @@ from .models import (
 )
 from .exceptions import AnyPayAPIError
 
-from typing import Union
+from typing import Union, Optional, List
 
 
 class AnyPayAPI:
@@ -17,7 +17,7 @@ class AnyPayAPI:
     AnyPay API wrapper.
     Docs: https://anypay.io/doc/api
     """
-    
+
     API_URL = 'https://anypay.io/api/%s/%s'
     HEADERS = {
         'Accept': 'application/json',
@@ -29,20 +29,20 @@ class AnyPayAPI:
         self, 
         api_id: str, 
         api_key: str, 
-        project_id: Union[int, None]=None, 
-        project_secret: Union[str, None]=None,
+        project_id: Optional[int]=None, 
+        project_secret: Optional[str]=None,
         use_md5: bool=False,
-        no_check: bool=False,
-    ) -> None:
+        check: bool=True,
+    ):
         """
         Initialize AnyPay API wrapper.
-        
+
         :param api_id: API ID, can be found in your profile settings.
         :param api_key: API Key, can be found in your profile settings.
         :param project_id: Project ID, can be found in your project settings.
         :param project_secret: Project Secret, can be found in your project settings. Add it if you need to use SCI.
         :param use_md5: Use MD5 signature instead of SHA256 (change to MD5 in settings).
-        :param no_check: Disable API ID and API Key check.
+        :param check: Disable API ID and API Key check.
 
         :raises: AnyPayAPIError if API ID or API Key is invalid. 
         """
@@ -54,12 +54,9 @@ class AnyPayAPI:
         self.project_secret = project_secret
 
         self.use_md5 = use_md5
-        self.session = httpx.AsyncClient(
-            headers=self.HEADERS,
-            timeout=60,
-        )
+        self.session = httpx.AsyncClient(headers=self.HEADERS, timeout=60)
 
-        if not no_check:
+        if check:
 
             # Check API ID and API Key by making request to `ip-notification` endpoint
             self._make_request('ip-notification')
@@ -136,10 +133,10 @@ class AnyPayAPI:
             headers=self.HEADERS,
             timeout=60,
         )
-        response = response.json()
 
+        response = response.json()
         self._check_response(response)
-        
+
         return response['result']
 
 
@@ -173,9 +170,8 @@ class AnyPayAPI:
         )
 
         response = response.json()
-
         self._check_response(response)
-        
+
         return response['result']
 
 
@@ -189,7 +185,6 @@ class AnyPayAPI:
         """
 
         result = await self._make_request_async('balance')
-
         return result['balance']
 
     
@@ -204,7 +199,6 @@ class AnyPayAPI:
         """
 
         result = self._make_request('balance')
-
         return result['balance']
 
 
@@ -218,7 +212,6 @@ class AnyPayAPI:
         """
 
         result = await self._make_request_async('rates')
-
         return Rates(**result)
 
 
@@ -234,11 +227,10 @@ class AnyPayAPI:
 
 
         result = self._make_request('rates')
-
         return Rates(**result)
 
 
-    async def get_commissions(self, project_id: Union[int, None]=None) -> dict:
+    async def get_commissions(self, project_id: Optional[int]=None) -> dict:
         """
         Get commissions.
         Docs: https://anypay.io/doc/api/commissions
@@ -254,7 +246,6 @@ class AnyPayAPI:
             '%(project_id)s',
             project_id=project_id or self.project_id,
         )
-
         return result
 
 
@@ -273,7 +264,6 @@ class AnyPayAPI:
             '%(project_id)s',
             project_id=self.project_id,
         )
-
         return result
 
 
@@ -283,15 +273,15 @@ class AnyPayAPI:
         amount: float,
         email: str,
         method: str,
-        project_id: Union[int, None] = None,
+        project_id: Optional[int] = None,
         currency: str='RUB',
         desc: str='',
-        method_currency: str = None,
-        phone: str = None,
-        tail: str = None,
-        success_url: str = None,
-        fail_url: str = None,
-        lang: str = None,
+        method_currency: Optional[str]=None,
+        phone: Optional[str]=None,
+        tail: Optional[str]=None,
+        success_url: Optional[str]=None,
+        fail_url: Optional[str]=None,
+        lang: Optional[str]=None,
     ) -> Bill:
         """
         Create a payout.
@@ -333,17 +323,16 @@ class AnyPayAPI:
             fail_url=fail_url,
             lang=lang,
         )
-
         return Bill(**result)
 
 
     async def get_payments(
         self,
-        project_id: Union[int, None]=None,
-        transaction_id: Union[int, None]=None,
-        pay_id: Union[int, None]=None,
+        project_id: Optional[int]=None,
+        transaction_id: Optional[int]=None,
+        pay_id: Optional[int]=None,
         offset: int=0,
-    ) -> list[Payment]:
+    ) -> List[Payment]:
         """
         Get payments.
         Docs: https://anypay.io/doc/api/payments
@@ -370,7 +359,7 @@ class AnyPayAPI:
             Payment(**payment)
             for payment
             in result['payments'].values()
-        ]
+        ] if result['payments'] else []
 
 
     async def create_payout(
@@ -379,9 +368,9 @@ class AnyPayAPI:
         payout_type: str,
         amount: float,
         wallet: str,
-        wallet_currency: Union[str, None]=None,
-        commission_type: Union[str, None]=None,
-        status_url: Union[str, None]=None,
+        wallet_currency: Optional[str]=None,
+        commission_type: Optional[str]=None,
+        status_url: Optional[str]=None,
     ) -> Payout:
         """
         Create a payout.
@@ -416,10 +405,10 @@ class AnyPayAPI:
 
     async def get_payouts(
         self,
-        transaction_id: Union[int, None]=None,
-        payout_id: Union[int, None]=None,
+        transaction_id: Optional[int]=None,
+        payout_id: Optional[int]=None,
         offset: int=0,
-    ) -> list[Payout]:
+    ) -> List[Payout]:
         """
         Get payouts.
         Docs: https://anypay.io/doc/api/payouts
@@ -443,10 +432,10 @@ class AnyPayAPI:
             Payout(**payout)
             for payout 
             in result['payouts'].values()
-        ]
+        ] if result['payouts'] else []
 
 
-    async def get_service_ip(self) -> list[str]:
+    async def get_service_ip(self) -> List[str]:
         """
         Get service IPs.
         Docs: https://anypay.io/doc/api/ip
@@ -455,13 +444,11 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        result = await self._make_request_async('ip-notification')
-
-        return result
+        return await self._make_request_async('ip-notification')
 
 
     @property
-    def service_ip(self) -> list[str]:
+    def service_ip(self) -> List[str]:
         """
         Get service IPs via property. Synchronous.
         Docs: https://anypay.io/doc/api/ip
@@ -470,25 +457,23 @@ class AnyPayAPI:
         :raises: AnyPayAPIError
         """
 
-        result = self._make_request('ip-notification')
-
-        return result
+        return self._make_request('ip-notification')
 
 
     async def create_bill(
         self, 
         pay_id: int,
         amount: Union[int, float],
-        project_id: Union[int, None]=None,
-        project_secret: Union[str, None]=None,
+        project_id: Optional[int]=None,
+        project_secret: Optional[str]=None,
         currency: str='RUB',
         description: str='Payment',
-        method: Union[str, None]=None,
-        email: Union[str, None]=None,
-        phone: Union[str, None]=None,
-        success_url: Union[str, None]=None,
-        fail_url: Union[str, None]=None,
-        lang: Union[str, None]=None,
+        method: Optional[str]=None,
+        email: Optional[str]=None,
+        phone: Optional[str]=None,
+        success_url: Optional[str]=None,
+        fail_url: Optional[str]=None,
+        lang: Optional[str]=None,
         use_md5: bool=True,
         **kwargs,
     ) -> Bill:
@@ -559,7 +544,6 @@ class AnyPayAPI:
             'sign': signature,
             **kwargs,
         }
-
         response = await self.session.get(
             'https://anypay.io/merchant',
             params={
@@ -572,5 +556,5 @@ class AnyPayAPI:
 
         return Bill(
             pay_id=pay_id,
-            payment_url=str(response.url),
+            url=str(response.url),
         )

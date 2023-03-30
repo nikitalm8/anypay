@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from pydantic import BaseModel
 from pydantic.fields import Field
@@ -20,4 +20,4 @@ class Payment(BaseModel):
     email: str
     description: str = Field(..., alias='desc')
     date: str
-    pay_date: str
+    pay_date: Optional[str] = None

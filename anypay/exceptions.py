@@ -4,7 +4,7 @@ class AnyPayAPIError(Exception):
     Exception codes and their meanings can be found here: https://anypay.io/doc/api/errors
     """
     
-    def __init__(self, exception: dict) -> None:
+    def __init__(self, exception: dict):
         """
         AnyPay API Exception.
         Docs: https://anypay.io/doc/api/errors
