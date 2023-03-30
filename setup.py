@@ -10,7 +10,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as file:
 
     long_description = "\n" + file.read()
 
-VERSION = '1.0.7'
+VERSION = '1.1.0'
 DESCRIPTION = 'Asynchronous AnyPay API wrapper'
 
 setup(
@@ -36,6 +36,6 @@ setup(
     project_urls={
         'Homepage': 'https://github.com/nikitalm8/anypay',
         'Bug Tracker': 'https://github.com/nikitalm8/anypay/issues',
-        'API Docs': 'https://anypay.io/doc/api'
+        'API Docs': 'https://anypay.io/doc/api',
     },
 )

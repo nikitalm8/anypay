@@ -12,7 +12,7 @@ from .exceptions import AnyPayAPIError
 from typing import Union, Optional, List
 
 
-class AnyPayAPI:
+class AnyPayAPI(object):
     """
     AnyPay API wrapper.
     Docs: https://anypay.io/doc/api
@@ -510,7 +510,7 @@ class AnyPayAPI:
                 pay_id,
             )
             signature = hashlib.md5(
-                singature_string.encode('utf-8')
+                singature_string.encode('utf-8'),
             ).hexdigest()
 
         else:
@@ -526,7 +526,7 @@ class AnyPayAPI:
                 project_secret or self.project_secret,
             )
             signature = hashlib.sha256(
-                signature_string.encode('utf-8')
+                signature_string.encode('utf-8'),
             ).hexdigest()
 
         params = {
@@ -551,10 +551,7 @@ class AnyPayAPI:
                 for key, value
                 in params.items()
                 if value is not None
-            }
+            },
         )
 
-        return Bill(
-            pay_id=pay_id,
-            url=str(response.url),
-        )
+        return Bill(id=pay_id, url=str(response.url))
