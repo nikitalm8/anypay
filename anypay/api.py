@@ -554,4 +554,4 @@ class AnyPayAPI(object):
             },
         )
 
-        return Bill(id=pay_id, payment_url=str(response.url))
+        return Bill(pay_id=pay_id, payment_url=str(response.url))
