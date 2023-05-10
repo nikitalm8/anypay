@@ -306,7 +306,6 @@ class AnyPayAPI(object):
         """
 
         result = await self._make_request_async(
-            self.API_URL,
             'create-payment',
             '%(project_id)s%(amount)s%(currency)s%(desc)s%(method)s',
             project_id=project_id or self.project_id,
