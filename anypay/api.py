@@ -1,15 +1,10 @@
-import httpx
 import hashlib
+import httpx
 
-from .models import (
-    Bill, 
-    Payment, 
-    Payout, 
-    Rates,
-)
+from typing import List, Optional, Union
+
 from .exceptions import AnyPayAPIError
-
-from typing import Union, Optional, List
+from .models import Bill, Payment, Payout, Rates
 
 
 class AnyPayAPI(object):
@@ -26,10 +21,10 @@ class AnyPayAPI(object):
 
 
     def __init__(
-        self, 
-        api_id: str, 
-        api_key: str, 
-        project_id: Optional[int]=None, 
+        self,
+        api_id: str,
+        api_key: str,
+        project_id: Optional[int]=None,
         project_secret: Optional[str]=None,
         use_md5: bool=False,
         check: bool=True,
@@ -44,7 +39,7 @@ class AnyPayAPI(object):
         :param use_md5: Use MD5 signature instead of SHA256 (change to MD5 in settings).
         :param check: Disable API ID and API Key check.
 
-        :raises: AnyPayAPIError if API ID or API Key is invalid. 
+        :raises: AnyPayAPIError if API ID or API Key is invalid.
         """
 
         self.api_id = api_id
@@ -77,9 +72,9 @@ class AnyPayAPI(object):
         encryption_method = hashlib.sha256 if not use_md5 else hashlib.md5
         signature = encryption_method(
             (
-                method 
-                + self.api_id 
-                + template % params 
+                method
+                + self.api_id
+                + template % params
                 + self.api_key
             ).encode('utf-8'),
         )
@@ -187,13 +182,13 @@ class AnyPayAPI(object):
         result = await self._make_request_async('balance')
         return result['balance']
 
-    
+
     @property
     def balance(self) -> Union[float, int]:
         """
         Get balance.
         Docs: https://anypay.io/doc/api/balance
-        
+
         :return: Balance.
         :raises: AnyPayAPIError
         """
@@ -206,7 +201,7 @@ class AnyPayAPI(object):
         """
         Get convertion rates.
         Docs: https://anypay.io/doc/api/rates
-        
+
         :return: Rates object.
         :raises: AnyPayAPIError
         """
@@ -220,7 +215,7 @@ class AnyPayAPI(object):
         """
         Get convertion rates from property. Synchronous.
         Docs: https://anypay.io/doc/api/rates
-        
+
         :return: Rates object.
         :raises: AnyPayAPIError
         """
@@ -234,8 +229,8 @@ class AnyPayAPI(object):
         """
         Get commissions.
         Docs: https://anypay.io/doc/api/commissions
-         
-        :param project_id: Project ID, can be found in your project settings.  
+
+        :param project_id: Project ID, can be found in your project settings.
 
         :return: Commissions object.
         :raises: AnyPayAPIError
@@ -254,7 +249,7 @@ class AnyPayAPI(object):
         """
         Get commissions from property. Synchronous.
         Docs: https://anypay.io/doc/api/commissions
-        
+
         :return: Commissions object.
         :raises: AnyPayAPIError
         """
@@ -268,7 +263,7 @@ class AnyPayAPI(object):
 
 
     async def create_payment(
-        self, 
+        self,
         pay_id: int,
         amount: float,
         email: str,
@@ -284,9 +279,9 @@ class AnyPayAPI(object):
         lang: Optional[str]=None,
     ) -> Bill:
         """
-        Create a payout.
+        Create a bill.
         Docs: https://anypay.io/doc/api/create-payment
-        
+
         :param pay_id: Payment ID.
         :param amount: Payment amount.
         :param email: User email.
@@ -300,14 +295,14 @@ class AnyPayAPI(object):
         :param success_url: Success URL.
         :param fail_url: Fail URL.
         :param lang: Bill page language.
-        
-        :return: Payout object.
+
+        :return: Bill object.
         :raises: AnyPayAPIError
         """
 
         result = await self._make_request_async(
             'create-payment',
-            '%(project_id)s%(amount)s%(currency)s%(desc)s%(method)s',
+            '%(project_id)s%(pay_id)s%(amount)s%(currency)s%(desc)s%(method)s',
             project_id=project_id or self.project_id,
             pay_id=pay_id,
             amount=amount,
@@ -335,7 +330,7 @@ class AnyPayAPI(object):
         """
         Get payments.
         Docs: https://anypay.io/doc/api/payments
-        
+
         :param project_id: Project ID, can be found in your project settings.
         :param transaction_id: Transaction ID.
         :param pay_id: Payment ID.
@@ -374,7 +369,7 @@ class AnyPayAPI(object):
         """
         Create a payout.
         Docs: https://anypay.io/doc/api/create-payout
-        
+
         :param payout_id: Payout ID.
         :param payout_type: Payout type (qiwi, ym, ...).
         :param amount: Amount.
@@ -382,7 +377,7 @@ class AnyPayAPI(object):
         :param wallet_currency: Wallet currency (defaults to RUB).
         :param commission_type: From where to deduct the commission (payment or balance).
         :param status_url: Status URL (Optional).
-        
+
         :return: Payout object.
         :raises: AnyPayAPIError
         """
@@ -411,7 +406,7 @@ class AnyPayAPI(object):
         """
         Get payouts.
         Docs: https://anypay.io/doc/api/payouts
-        
+
         :param transaction_id: Transaction ID.
         :param payout_id: Payout ID.
         :param offset: Offset (defaults to 0).
@@ -429,7 +424,7 @@ class AnyPayAPI(object):
 
         return [
             Payout(**payout)
-            for payout 
+            for payout
             in result['payouts'].values()
         ] if result['payouts'] else []
 
@@ -460,7 +455,7 @@ class AnyPayAPI(object):
 
 
     async def create_bill(
-        self, 
+        self,
         pay_id: int,
         amount: Union[int, float],
         project_id: Optional[int]=None,
@@ -479,7 +474,7 @@ class AnyPayAPI(object):
         """
         Create a bill via eased up SCI methods (only pay_id, amount, project_id and project_secret are required).
         Note that this method does not raise an exception if the credentials are incorrect, the exception is show to user on the bill's page.
-        
+
         Docs: https://anypay.io/doc/sci/
 
         :param pay_id: Payment ID.
@@ -498,7 +493,7 @@ class AnyPayAPI(object):
 
         :return: Bill object.
         """
-    
+
         if use_md5:
 
             singature_string = '%s:%s:%s:%s:%s' % (
